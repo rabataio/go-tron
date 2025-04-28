@@ -5,4 +5,4 @@ lint:
     directories:
       exclude:
         - proto/third_party
-  
+        - proto/tron

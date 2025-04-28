@@ -1,6 +1,7 @@
 ignore:
   - .git/
   - .idea/
+  - proto/tron/
 
 rules:
   end-of-file:

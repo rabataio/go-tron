@@ -1,6 +1,6 @@
 module github.com/rabataio/go-tron
 
-go 1.24.2
+go 1.24.0
 
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.1

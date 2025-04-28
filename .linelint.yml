@@ -1,0 +1,8 @@
+ignore:
+  - .git/
+  - .idea/
+
+rules:
+  end-of-file:
+    enable: true
+    single-new-line: true

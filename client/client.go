@@ -35,6 +35,7 @@ func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(unaryInterceptor(token)),
 		grpc.WithUnaryInterceptor(timeoutmiddleware.UnaryClientInterceptor(timeout)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)),
 	)
 	if err != nil {
 		return nil, err

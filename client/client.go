@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func unaryInterceptor(token string) grpc.UnaryClientInterceptor {
+func tokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -20,10 +20,7 @@ func unaryInterceptor(token string) grpc.UnaryClientInterceptor {
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		md := metadata.New(map[string]string{
-			"TRON-PRO-API-KEY": token,
-		})
-		ctx = metadata.NewOutgoingContext(ctx, md)
+		ctx = metadata.AppendToOutgoingContext(ctx, "TRON-PRO-API-KEY", token)
 
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
@@ -33,8 +30,10 @@ func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.
 	connection, err := grpc.NewClient(
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(unaryInterceptor(token)),
-		grpc.WithUnaryInterceptor(timeoutmiddleware.UnaryClientInterceptor(timeout)),
+		grpc.WithChainUnaryInterceptor(
+			tokenInterceptor(token),
+			timeoutmiddleware.UnaryClientInterceptor(timeout),
+		),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)),
 	)
 	if err != nil {

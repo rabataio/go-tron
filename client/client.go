@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	defaultRateLimit = 15
+	defaultRateLimit = 7
 	defaultBurst     = 1
 )
 
-func tokenInterceptor(token string) grpc.UnaryClientInterceptor {
+func TokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -32,7 +32,7 @@ func tokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	}
 }
 
-func rateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
+func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -56,8 +56,8 @@ func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
-			rateLimitInterceptor(limiter),
-			tokenInterceptor(token),
+			RateLimitInterceptor(limiter),
+			TokenInterceptor(token),
 			timeoutmiddleware.UnaryClientInterceptor(timeout),
 		),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)),

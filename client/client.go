@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultRateLimit = 15
+	defaultRateLimit = 10
 	defaultBurst     = 1
 )
 

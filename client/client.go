@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	timeoutmiddleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
@@ -13,7 +14,8 @@ import (
 )
 
 const (
-	defaultRateLimit = 7
+	// NOTE: 15 is maximum described by tron api docs, but system response with 403 and 503 errors when set 15.
+	defaultRateLimit = 14
 	defaultBurst     = 1
 )
 
@@ -51,6 +53,8 @@ func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 
 func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.ClientConn, error) {
 	limiter := rate.NewLimiter(rate.Limit(defaultRateLimit), defaultBurst)
+
+	fmt.Printf("defaultRateLimit: %d\n", defaultRateLimit)
 
 	connection, err := grpc.NewClient(
 		endpoint,

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	timeoutmiddleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
@@ -54,8 +53,6 @@ func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.ClientConn, error) {
 	limiter := rate.NewLimiter(rate.Limit(defaultRateLimit), defaultBurst)
 
-	fmt.Printf("defaultRateLimit: %d\n", defaultRateLimit)
-
 	connection, err := grpc.NewClient(
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -64,7 +61,7 @@ func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.
 			TokenInterceptor(token),
 			timeoutmiddleware.UnaryClientInterceptor(timeout),
 		),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)), //nolint:mnd
 	)
 	if err != nil {
 		return nil, err

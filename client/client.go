@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	defaultRateLimit = 15
+	// NOTE: 15 is maximum described by tron api docs, but system response with 403 and 503 errors when set 15.
+	defaultRateLimit = 14
 	defaultBurst     = 1
 )
 
-func tokenInterceptor(token string) grpc.UnaryClientInterceptor {
+func TokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -32,7 +33,7 @@ func tokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	}
 }
 
-func rateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
+func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -56,11 +57,11 @@ func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.
 		endpoint,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
-			rateLimitInterceptor(limiter),
-			tokenInterceptor(token),
+			RateLimitInterceptor(limiter),
+			TokenInterceptor(token),
 			timeoutmiddleware.UnaryClientInterceptor(timeout),
 		),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)), //nolint:mnd
 	)
 	if err != nil {
 		return nil, err

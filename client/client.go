@@ -54,13 +54,13 @@ func NewConnection(
 	endpoint string,
 	token string,
 	timeout time.Duration,
-	credentials credentials.TransportCredentials,
+	transportCredentials credentials.TransportCredentials,
 ) (*grpc.ClientConn, error) {
 	limiter := rate.NewLimiter(rate.Limit(defaultRateLimit), defaultBurst)
 
 	connection, err := grpc.NewClient(
 		endpoint,
-		grpc.WithTransportCredentials(credentials),
+		grpc.WithTransportCredentials(transportCredentials),
 		grpc.WithChainUnaryInterceptor(
 			RateLimitInterceptor(limiter),
 			TokenInterceptor(token),

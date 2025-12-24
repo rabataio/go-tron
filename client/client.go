@@ -8,7 +8,7 @@ import (
 	pbapi "github.com/rabataio/go-tron/proto/api"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -50,12 +50,17 @@ func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 	}
 }
 
-func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.ClientConn, error) {
+func NewConnection(
+	endpoint string,
+	token string,
+	timeout time.Duration,
+	transportCredentials credentials.TransportCredentials,
+) (*grpc.ClientConn, error) {
 	limiter := rate.NewLimiter(rate.Limit(defaultRateLimit), defaultBurst)
 
 	connection, err := grpc.NewClient(
 		endpoint,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(transportCredentials),
 		grpc.WithChainUnaryInterceptor(
 			RateLimitInterceptor(limiter),
 			TokenInterceptor(token),

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"crypto/tls"
 	"time"
 
 	timeoutmiddleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
@@ -51,12 +50,17 @@ func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 	}
 }
 
-func NewConnection(endpoint string, token string, timeout time.Duration) (*grpc.ClientConn, error) {
+func NewConnection(
+	endpoint string,
+	token string,
+	timeout time.Duration,
+	credentials credentials.TransportCredentials,
+) (*grpc.ClientConn, error) {
 	limiter := rate.NewLimiter(rate.Limit(defaultRateLimit), defaultBurst)
 
 	connection, err := grpc.NewClient(
 		endpoint,
-		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
+		grpc.WithTransportCredentials(credentials),
 		grpc.WithChainUnaryInterceptor(
 			RateLimitInterceptor(limiter),
 			TokenInterceptor(token),

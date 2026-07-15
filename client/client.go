@@ -18,7 +18,7 @@ const (
 	defaultBurst     = 1
 )
 
-func TokenInterceptor(token string) grpc.UnaryClientInterceptor {
+func TokenInterceptor(apiKeyHeader string, token string) grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -27,7 +27,7 @@ func TokenInterceptor(token string) grpc.UnaryClientInterceptor {
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		ctx = metadata.AppendToOutgoingContext(ctx, "TRON-PRO-API-KEY", token)
+		ctx = metadata.AppendToOutgoingContext(ctx, apiKeyHeader, token)
 
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}
@@ -52,6 +52,7 @@ func RateLimitInterceptor(limiter *rate.Limiter) grpc.UnaryClientInterceptor {
 
 func NewConnection(
 	endpoint string,
+	apiKeyHeader string,
 	token string,
 	timeout time.Duration,
 	transportCredentials credentials.TransportCredentials,
@@ -63,7 +64,7 @@ func NewConnection(
 		grpc.WithTransportCredentials(transportCredentials),
 		grpc.WithChainUnaryInterceptor(
 			RateLimitInterceptor(limiter),
-			TokenInterceptor(token),
+			TokenInterceptor(apiKeyHeader, token),
 			timeoutmiddleware.UnaryClientInterceptor(timeout),
 		),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(32*1024*1024)), //nolint:mnd
